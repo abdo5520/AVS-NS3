@@ -1,0 +1,23 @@
+>>>>>>>>>>>>>>>> []
+/home/abdo/ns-allinone-3.13/ns-3.13/bindings/python/ns3modulegen_core_customizations.py:69: DeprecationWarning: Typo: set_tranformation -> set_transformation
+  handler.set_tranformation(self, orig_ctype)
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::_List_const_iterator< ns3::AttributeConstructionList::Item >'],) in wrapper public: retval? ???::Begin (params?) const;
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::_List_const_iterator< ns3::AttributeConstructionList::Item >'],) in wrapper public: retval? ???::End (params?) const;
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/pybindgen-0.15.0.795/pybindgen/settings.py:85: DeprecationWarning: The option pybindgen.settings.deprecated_virtuals has not been set.  I am going to assume the value of True, to preserve backward compatibility, but the default value will change in the future, and the option will eventually disappear.
+  DeprecationWarning)
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('Missing transfer_ownership option',) in wrapper public: retval? ???::Delete (params?);
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['ns3::Callback< ns3::ObjectBase *, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty >'],) in wrapper public: retval? ???::GetConstructor (params?) const;
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('Missing transfer_ownership option',) in wrapper public: retval? ???::LookupAttributeByName (params?) const;
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['short unsigned int'],) in wrapper None
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::pair< double, double >'],) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9084d6c>
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::pair< double, double >'],) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9084d8c>
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
+/home/abdo/ns-allinone-3.13/ns-3.13/src/propagation/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception CodeGenerationError('ns3::PropagationDelayModel cannot be constructed (class has pure virtual methods)',) in wrapper <pybindgen.CppClass 'ns3::PropagationDelayModel'>
+  warnings.warn("exception %r in wrapper %s" % (exception, wrapper))

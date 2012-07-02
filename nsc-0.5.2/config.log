@@ -1,0 +1,22 @@
+file /home/abdo/ns-allinone-3.13/nsc-0.5.2/SConstruct,line 154:
+	Configure(confdir = .sconf_temp)
+scons: Configure: Checking target architecure...
+scons: Configure: (cached) x86
+
+scons: Configure: Checking for C library fl... 
+.sconf_temp/conftest_0.c <-
+  |
+  |
+  |
+  |int
+  |main() {
+  |  
+  |return 0;
+  |}
+  |
+gcc -o .sconf_temp/conftest_0.o -c .sconf_temp/conftest_0.c
+gcc -o .sconf_temp/conftest_0 .sconf_temp/conftest_0.o -lfl
+/usr/bin/ld: cannot find -lfl
+collect2: ld returned 1 exit status
+scons: Configure: no
+
