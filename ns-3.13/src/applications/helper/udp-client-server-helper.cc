@@ -135,6 +135,7 @@ RateAdaptiveSenderHelper::RateAdaptiveSenderHelper ()
 
 RateAdaptiveSenderHelper::RateAdaptiveSenderHelper (Ipv4Address address, uint16_t port, std::string filename)
 {
+
   m_factory.SetTypeId (RateAdaptiveSender::GetTypeId ());
   SetAttribute ("RemoteAddress", Ipv4AddressValue (address));
   SetAttribute ("RemotePort", UintegerValue (port));

@@ -379,6 +379,9 @@ DcaTxop::NotifyAccessGranted (void)
       m_currentPacket = m_queue->Dequeue (&m_currentHdr);
       NS_ASSERT (m_currentPacket != 0);
       uint16_t sequence = m_txMiddle->GetNextSequenceNumberfor (&m_currentHdr);
+      // Added by Abdallah
+      // initialize the 802.11 frame header's paramters , it will change later after checking the following
+      // broadcast, multicast, fragementation, RTS need, etc
       m_currentHdr.SetSequenceNumber (sequence);
       m_currentHdr.SetFragmentNumber (0);
       m_currentHdr.SetNoMoreFragments ();

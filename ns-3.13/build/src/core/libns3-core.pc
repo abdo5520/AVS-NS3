@@ -6,7 +6,7 @@ includedir=/usr/local/include
 Name: libns3-core
 Description: ns-3 module ns3-core
 Version: devel
-Libs: -L${libdir} -Wl,-Bdynamic -lns3-core -lrt
+Libs: -L${libdir} -Wl,-Bdynamic -lns3-core -lrt -lgsl -lgslcblas -lm
 Cflags: -I${includedir} -pthread -pthread
 Requires: 
 

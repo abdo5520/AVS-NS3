@@ -115,10 +115,10 @@ RateAdaptiveReceiver::HandleRead (Ptr<Socket> socket)
 	 * of 10 Bytes instead of echo the entire frame
 	 */
 
-  Ptr<Packet> packet;
-  uint32_t ackSize;
-  Ptr<Packet> ackPacket;
 
+  Ptr<Packet> ackPacket;
+ Ptr<Packet> packet;
+  uint32_t ackSize;
   ackSize = 10;
   ackPacket = Create<Packet> (ackSize);
   Address from;
@@ -133,10 +133,10 @@ RateAdaptiveReceiver::HandleRead (Ptr<Socket> socket)
           packet->RemoveAllByteTags ();
 
           NS_LOG_LOGIC ("Echoing packet");
-          //socket->SendTo (packet, 0, from);
-          socket->SendTo (ackPacket, 0, from);
+          NS_ASSERT(socket->SendTo (ackPacket, 0, from) != -1);
+
         }
-    }
-}
+    } //end of while loop
+}//end of function
 
 } // Namespace ns3

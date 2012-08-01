@@ -205,6 +205,10 @@ private:
   uint8_t m_ctrlToDs;
   uint8_t m_ctrlFromDs;
   uint8_t m_ctrlMoreFrag;
+  /** Added by Abdallah Abdallah
+   * The Transmission Retry is set as an 802.11 frame's attribute
+   * saved into the frame's header
+   */
   uint8_t m_ctrlRetry;
   uint8_t m_ctrlPwrMgt;
   uint8_t m_ctrlMoreData;

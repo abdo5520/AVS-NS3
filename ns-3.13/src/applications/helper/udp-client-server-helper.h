@@ -189,8 +189,8 @@ public:
    * Create RateAdaptiveSenderHelper which will make life easier for people trying
    * to set up simulations with udp-client-server.
    *
-   * \param ip The IP address of the remote udp server
-   * \param port The port number of the remote udp server
+   * \param ip The IP address of the RateAdaptiveSender
+   * \param port The port number of the reRateAdaptiveSender
    * \param filename the file from which packet traces will be loaded
    */
 	RateAdaptiveSenderHelper (Ipv4Address ip, uint16_t port, std::string filename);

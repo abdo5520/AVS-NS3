@@ -46,7 +46,7 @@ main (int argc, char *argv[])
 
         cout << "// Default Network Topology Without Extra Parameters           \n";
         cout << "//                                                             \n";    
-        cout << "//   Wifi 10.1.3.0                                             \n";    
+        cout << "//   Wifi 10.1.3.0  Port#= (port)                              \n";
         cout << "//        (Dest.)  AP                                          \n";    
         cout << "//            *    *                                           \n";    
         cout << "//  |    |    |    |    10.1.1.0                               \n";    
@@ -59,11 +59,11 @@ main (int argc, char *argv[])
   bool verbose = true;
   
 //  uint32_t nCsma = 3;
-  uint32_t nWifi = 1;           // Only one WifiStaNode attached to the Access Point
+  uint32_t nWifi = 1;         // Only one WifiStaNode attached to the Access Point
   uint32_t np2pNodes = 2;
   uint16_t nLevels = 3;
-  std::string inputFileName("traceInput");
-  std::string outputFileName("outTimeToSend1");
+  std::string inputFileName("JurassicPark");
+  std::string outputFileName("rateAdaptOut1");
 
 // comment unused variables because warnings are treated as errors      
 //  uint32_t serverPortNumber= 4000;
@@ -91,7 +91,7 @@ main (int argc, char *argv[])
   p2pNodes.Create (np2pNodes);
 
   PointToPointHelper pointToPoint;
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
   // find out later what is the channel delay concept from the model point of view
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));  
 
@@ -99,7 +99,7 @@ main (int argc, char *argv[])
 // one of these nodes is the source, and the second one is the Access Point in the WiFi side
   p2pDevices = pointToPoint.Install (p2pNodes);   
 
-// No csma nodes in this simulation , maybe later
+// No csma nodes ( these are CSMA/CD Ethernet Nodes) in this simulation , maybe later
 /**
   NodeContainer csmaNodes;
   csmaNodes.Add (p2pNodes.Get (1));
@@ -113,7 +113,9 @@ main (int argc, char *argv[])
   csmaDevices = csma.Install (csmaNodes);
 */
   NodeContainer wifiStaNodes;
-  wifiStaNodes.Create (nWifi);    // nWifi is the number of WiFi nodes entered by the user or set as default
+  wifiStaNodes.Create (nWifi);    // nWifi is the number of WiFi Station nodes entered by the user or set as default
+
+  // set one of the p2p Nodes to become the WiFi Access Point (AP) Node
   NodeContainer wifiApNode = p2pNodes.Get (0);
 
   YansWifiChannelHelper channel = YansWifiChannelHelper::Default ();
@@ -121,12 +123,14 @@ main (int argc, char *argv[])
   phy.SetChannel (channel.Create ());
 
   WifiHelper wifi = WifiHelper::Default ();
-//  wifi.EnableLogComponents();
+  wifi.EnableLogComponents();
 
-// The Default value is "ns3::ArfWifiManager" , this is why we change it below
-  wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
-// The Default is (  helper.SetType ("ns3::AdhocWifiMac",
-//  "QosSupported", BooleanValue (false));) , this is why we use mac.setType later below
+// The Default value is "ns3::ArfWifiManager" , this is why we change it below to Constant Rate
+  wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager");
+/** The Default is (  helper.SetType ("ns3::AdhocWifiMac",
+ "QosSupported", BooleanValue (false));) , this is why we use mac.setType later below
+ to change it to StaWifiMac
+*/
 
   NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
 // Later we should try the same run using the QosWifiMacHelper
@@ -135,7 +139,7 @@ main (int argc, char *argv[])
 
   Ssid ssid = Ssid ("ns-3-ssid");
   mac.SetType ("ns3::StaWifiMac",
-               "Ssid", SsidValue (ssid),
+		       "Ssid", SsidValue (ssid),
                "ActiveProbing", BooleanValue (false));
 
   NetDeviceContainer staDevices;
@@ -221,8 +225,8 @@ main (int argc, char *argv[])
   RateAdaptiveReceiverHelper videoClient (port);
 //  ApplicationContainer apps = server.Install (wifiStaNodes.Get (nWifi - 1));
   ApplicationContainer apps = videoClient.Install (wifiStaNodes.Get (nWifi - 1));
-  apps.Start (Seconds (1.0));
-  apps.Stop (Seconds (2000.0));
+  apps.Start (Seconds (1.9));
+  apps.Stop (Seconds (2.1));
 
 
   uint32_t MaxPacketSize = 1400-28; // IP Header (20) + UDP Header (8) = 28
@@ -237,16 +241,16 @@ main (int argc, char *argv[])
   std::cout << outputFileName << std::endl;
   apps = videoServer.Install (p2pNodes.Get (1));
   apps.Start (Seconds (2.0));
-  apps.Stop (Seconds (2000.0));
+  apps.Stop (Seconds (2.1));
 
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  Simulator::Stop (Seconds (2200.0));
+  Simulator::Stop (Seconds (2.1));
 // The string passed is a Filename prefix to use when creating ascii trace files
   pointToPoint.EnablePcapAll ("rateadaptapp"+inputFileName);
-  phy.EnablePcap ("rateadaptapp"+inputFileName, apDevices.Get (0));
-  phy.EnablePcap ("rateadaptapp"+inputFileName, staDevices.Get(0));
+//  phy.EnablePcap ("rateadaptapp"+inputFileName, apDevices.Get (0));
+//  phy.EnablePcap ("rateadaptapp"+inputFileName, staDevices.Get(0));
 
 //  csma.EnablePcap ("third", csmaDevices.Get (0), true);
 

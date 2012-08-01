@@ -56,6 +56,7 @@ public:
    * \param ip the destination ip address to which the stream will be sent
    * \param port the destination udp port to which the stream will be sent
    * \param traceFile a path to an MPEG4 trace file formatted as follows:
+   * Number of Frames
    *  FrameNo Frametype   Time[ms]    Length [byte]
    *  FrameNo Frametype   Time[ms]    Length [byte]
    *  ...
@@ -74,18 +75,6 @@ public:
   void SetRemote (Ipv4Address ip, uint16_t port);
 
   /**
-   * \brief set the trace file to be used by the application
-   * \param filename a path to an MPEG4 trace file formatted as follows:
-   *  Frame No Frametype   Time[ms]    Length [byte]
-   *  Frame No Frametype   Time[ms]    Length [byte]
-   *  ...
-   */
-  void SetTraceFile (std::string filename);
-
-
-  void SetOutputTraceFile (std::string filename);
-
-  /**
    * \return the maximum packet size
    */
   uint16_t GetMaxPacketSize (void);
@@ -94,6 +83,18 @@ public:
    * \param maxPacketSize The maximum packet size
    */
   void SetMaxPacketSize (uint16_t maxPacketSize);
+
+
+  /**
+   * \brief set the trace file to be used by the application
+   * \param filename a path to an MPEG4 trace file formatted as follows:
+   *  Frame No Frametype   Time[ms]    Length [byte]
+   *  Frame No Frametype   Time[ms]    Length [byte]
+   *  ...
+   */
+  void SetTraceFile (std::string filename);
+  void SetOutputTraceFile (std::string filename);
+  bool AdaptControl (uint32_t signal);
 
 protected:
   virtual void DoDispose (void);
@@ -110,21 +111,33 @@ private:
 
   struct TraceEntry
   {
-    uint32_t timeToSend;
-    uint16_t packetSize;
-    char frameType;
+	uint32_t traceTime;
+	uint16_t frameSize;
+	char frameType;
+	uint32_t timeToSend;
+    uint32_t index;
+
   };
+	// number of video levels supported = number of input traces
+  uint16_t nVideoLevels;
+  uint16_t currentLevel;
+  uint16_t m_maxPacketSize;
+  uint16_t deltaTime;
+
   uint32_t m_sent;
   std::string OutputTraceFilename;
   Ptr<Socket> m_socket;
   Ipv4Address m_peerAddress;
   uint16_t m_peerPort;
+
+// RateController controller;
   EventId m_sendEvent;
-  uint16_t nVideoLevels; 				// number of video levels supported = number of input traces
-  std::vector < std::vector<struct TraceEntry> > m_entries;   // the data structure to hold all the video traces levels at a time
+ // the data structure to hold all the video traces levels at a time
+  std::vector < std::vector<struct TraceEntry> > m_entries;
+
   uint32_t m_currentEntry;
   static struct TraceEntry g_defaultEntries[];
-  uint16_t m_maxPacketSize;
+
 };
 
 } // namespace ns3

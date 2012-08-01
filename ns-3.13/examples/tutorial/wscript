@@ -9,6 +9,9 @@ def build(bld):
 # added by Abdallah Abdallah 
     obj = bld.create_ns3_program('rateadaptapp', ['core', 'point-to-point','csma', 'wifi', 'internet','applications'])
     obj.source = 'rateadaptapp.cc'
+# added by Abdallah Abdallah 
+    obj = bld.create_ns3_program('p2prateadaptapp', ['core', 'point-to-point', 'internet','applications'])
+    obj.source = 'p2prateadaptapp.cc'
         
     obj = bld.create_ns3_program('first', ['core', 'point-to-point', 'internet', 'applications'])
     obj.source = 'first.cc'

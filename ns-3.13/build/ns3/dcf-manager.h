@@ -86,6 +86,7 @@ public:
    * \returns the current value of the CW variable. The initial value is
    * minCW.
    */
+  // added by Abdallah Abdallah, we can use GetCw to get the current Cw value as a first meter
   uint32_t GetCw (void) const;
   /**
    * \returns true if access has been requested for this DcfState and

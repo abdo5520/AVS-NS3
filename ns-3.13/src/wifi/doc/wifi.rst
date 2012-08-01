@@ -119,7 +119,7 @@ Using the WifiNetDevice
 The modularity provided by the implementation makes low-level configuration of
 the WifiNetDevice powerful but complex. For this reason, we provide some helper
 classes to perform common operations in a simple matter, and leverage the |ns3|
-attribute system to allow users to control the parametrization of the underlying
+attribute system to allow users to control the parameterization of the underlying
 models.
 
 Users who use the low-level |ns3| API and who wish to add a WifiNetDevice to

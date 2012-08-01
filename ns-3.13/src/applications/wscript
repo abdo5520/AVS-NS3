@@ -21,7 +21,7 @@ def build(bld):
 # the rate adaptive streaming sender model by Abdallah Abdallah
         'model/rate-adaptive-sender-app.cc',
 # the rate adaptive streaming receiver model by Abdallah Abdallah        
-		'model/rate-adaptive-receiver.cc',
+	'model/rate-adaptive-receiver.cc',
         'helper/bulk-send-helper.cc',
         'helper/on-off-helper.cc',
         'helper/packet-sink-helper.cc',
@@ -57,7 +57,7 @@ def build(bld):
 # the rate adaptive streaming sender model by Abdallah Abdallah        
         'model/rate-adaptive-sender-app.h',
 # the rate adaptive streaming receiver model by Abdallah Abdallah
-		'model/rate-adaptive-receiver.h',        
+	'model/rate-adaptive-receiver.h',        
         'helper/bulk-send-helper.h',
         'helper/on-off-helper.h',
         'helper/packet-sink-helper.h',

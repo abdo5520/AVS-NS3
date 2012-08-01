@@ -3,9 +3,9 @@
  *
  * @date May 14, 2012
  *  @author  Abdallah S. Abdallah
- *  @brief this is Adaptive Streaming Server application which will read
- *  the input trace file and generate traffic and send it over UDP based
- *  on parameters such as the video frame size, encoded times, type, given
+ *  @brief this is Adaptive Streaming (Sender) Server application which will read
+ *  the input MPEG-4 trace file,generate traffic and send it over UDP based
+ *  on parameters such as the video frame size, encoded times, and frame-type given
  *  in the input trace file
  */
 
@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+
 
 
 namespace ns3 {
@@ -34,16 +36,16 @@ NS_LOG_COMPONENT_DEFINE ("RateAdaptiveSender");
 NS_OBJECT_ENSURE_REGISTERED (RateAdaptiveSender);
 
 struct RateAdaptiveSender::TraceEntry RateAdaptiveSender::g_defaultEntries[] = {
-  { 0, 534, 'I'},
-  { 40, 1542, 'P'},
-  { 120, 134, 'B'},
-  { 80, 390, 'B'},
-  { 240, 765, 'P'},
-  { 160, 407, 'B'},
-  { 200, 504, 'B'},
-  { 360, 903, 'P'},
-  { 280, 421, 'B'},
-  { 320, 587, 'B'}
+  { 0, 534, 'I',-1,1},
+  { 40, 1542, 'P',-1,2},
+  { 120, 134, 'B',-1,3},
+  { 80, 390, 'B',-1,4},
+  { 240, 765, 'P',-1,5},
+  { 160, 407, 'B',-1,6},
+  { 200, 504, 'B',-1,7},
+  { 360, 903, 'P',-1,8},
+  { 280, 421, 'B',-1,9},
+  { 320, 587, 'B',-1,10}
 };
 
 
@@ -66,7 +68,7 @@ RateAdaptiveSender::GetTypeId (void)
                    MakeUintegerChecker<uint16_t> ())
     .AddAttribute ("MaxPacketSize",
                    "The maximum size of a packet.",
-                   UintegerValue (1024),
+                   UintegerValue (1400),
                    MakeUintegerAccessor (&RateAdaptiveSender::m_maxPacketSize),
                    MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("nVideoLevels",
@@ -84,7 +86,7 @@ RateAdaptiveSender::GetTypeId (void)
                    MakeStringAccessor (&RateAdaptiveSender::SetOutputTraceFile),
                    MakeStringChecker ())
     .AddAttribute ("TraceFilename",
-                   "Name of file to load a trace from. By default, uses a hardcoded trace.",
+                   "The name of the input traces file to load traces from. The default uses a hard-coded defined struct",
                    StringValue (""),
                    MakeStringAccessor (&RateAdaptiveSender::SetTraceFile),
                    MakeStringChecker ())
@@ -100,6 +102,9 @@ RateAdaptiveSender::RateAdaptiveSender ()
   NS_LOG_FUNCTION (this);
   m_sent = 0;
   m_socket = 0;
+  currentLevel = 0;
+  deltaTime = 40;
+
   m_sendEvent = EventId ();
   m_maxPacketSize = 1400;
   nVideoLevels = 3;
@@ -117,6 +122,8 @@ RateAdaptiveSender::RateAdaptiveSender (Ipv4Address ip, uint16_t port,
   NS_LOG_FUNCTION (this);
   m_sent = 0;
   m_socket = 0;
+  currentLevel = 0;
+  deltaTime = 40;
   m_sendEvent = EventId ();
   m_peerAddress = ip;
   m_peerPort = port;
@@ -124,7 +131,8 @@ RateAdaptiveSender::RateAdaptiveSender (Ipv4Address ip, uint16_t port,
   m_maxPacketSize = 1400;
   nVideoLevels = 3;
 
-
+  // This code just check that the input trace file name is set correctly and can be combined
+  // with the video quality level that is represented as char "1", "2", "3", ..., "N"
   for (i=1 ;  i <= nVideoLevels; i++)
   {
   sprintf(buffer,"%d",i);
@@ -171,10 +179,14 @@ RateAdaptiveSender::SetTraceFile (std::string traceFile)
 void
 RateAdaptiveSender::SetOutputTraceFile (std::string fileName)
 {
-	if (fileName == "")
-		OutputTraceFilename = OutputTraceFilename + "outTimeToSend1";
-	else
+	if (fileName == ""){
+		OutputTraceFilename = OutputTraceFilename + "OutputTrace";
+	}
+
+	else{
 		OutputTraceFilename = OutputTraceFilename + fileName;
+	}
+
 
 	std::cout << __PRETTY_FUNCTION__ << "---->" << OutputTraceFilename << std::endl;
 
@@ -204,32 +216,45 @@ RateAdaptiveSender::DoDispose (void)
   Application::DoDispose ();
 }
 
+/**
+bool myfunction (struct RateAdaptiveSender::TraceEntry  a,struct RateAdaptiveSender::TraceEntry  b) {
+
+	return (a.traceTime < b.traceTime);
+}
+
+*/
+
 void
 RateAdaptiveSender::LoadTrace (std::string filename)
 {
   NS_LOG_FUNCTION (this << filename);
-  uint32_t time, index, prevTime = 0;
+  char buffer[2];
+  char frameType;
+  uint32_t time = 0;
+  uint32_t index = 0;
+  uint32_t prevTimeP = 0;
+//  uint32_t prevTimeB = 0;
   uint16_t size;
   uint16_t loopCounter=0;
   uint32_t fileLength=0;
-  uint16_t filesCounter;
-  std::string composedTraceFileName;
-  char buffer[2];
-  std::string line;
-  char frameType;
+  uint16_t filesCounter=1;
+
   TraceEntry entry;
+
+  std::string composedTraceFileName;
+  std::string line;
   std::ifstream ifTraceFile;
   std::ofstream outTimeTosendFile;
 
   /**
    * By Abdallah Abdallah
-   * Using ifTraceFile.good() is wrong, in C++ it is not equivalent to check the stream itself, it is just
+   * Using ifTraceFile.good() is wrong, in C++ it is not equivalent to check the stream itself, it ONLY checks
    * its current status which may not be updated yet. This is why it reads the last line twice
    * This is why it will be modified below
    * solve this by adding a fileLength as first line in the traceFile and read it before starting the while
-   * loop , decreasing it every iteration, then compare against zero
+   * loop , decreasing it every iteration, and compare against zero
    */
-  /** Adding multiple Video Levels support by Abdallah Abdallah
+  /** Adding multiple Video Levels support by Abdallah S. Abdallah
    *  June 12, 2012
    */
 
@@ -245,80 +270,104 @@ RateAdaptiveSender::LoadTrace (std::string filename)
 
 	  ifTraceFile.open (composedTraceFileName.c_str (), std::ifstream::in);
 	 // m_entries[filesCounter - 1].clear ();
+	  // push to initialize the tracing vector before filling the vector with data read from the trace file
 	  m_entries.push_back(std::vector<struct TraceEntry>());
 	  if (!ifTraceFile.good ())
 		{
-		  LoadDefaultTrace ();
 		  ifTraceFile.close ();
 		  m_currentEntry = 0;
+		  NS_ASSERT(1 < 0);
 		}
 	  else
 	  {
 		//  std::cout << __PRETTY_FUNCTION__ << __LINE__ << "--->" << OutputTraceFilename.c_str() << "\n";
 		//  outTimeTosendFile.open (OutputTraceFilename.c_str(), std::ofstream::out);
 	  std::cout << __PRETTY_FUNCTION__ << __LINE__ << "filesCounter = "<< filesCounter <<std::endl;
+	 // Read the first line in the file which is the number of video frames traces inside the file
 	  ifTraceFile >> fileLength;
 	  std::cout << __PRETTY_FUNCTION__ << __LINE__  << "fileLength"<< fileLength <<std::endl;
-	  while (ifTraceFile.good () && fileLength > 0)
+	  }
+	  while (fileLength > 0)
 		{
 
 
-		  std::cout <<  __PRETTY_FUNCTION__ << __LINE__ << "--->" << ifTraceFile.good () << std::endl;
+		//  std::cout <<  __PRETTY_FUNCTION__ << __LINE__ << "--->" << ifTraceFile.good () << std::endl;
 		  /** This code read the entire file and store it in the
 		   * vector m_entries after scheduling the correct related
 		   * time for events ( scheduling sending time stamps
 		   * according to Frame Types )
 		   *
 		   */
-		  /**
+		  /**   ALREADY FIXED
 		   * check why after passing the filenames from outside
 		   * the last line gets read twice into the memory ?
 		   */
 
 		  ifTraceFile >> index >> frameType >> time >> size;
+		  entry.traceTime = time;
+		  entry.frameType = frameType;
+		  entry.frameSize = size;
+		  entry.index = index;
+		  // entry.timeToSend is to be calculated later according to the rate controller
+
+		  /**
+		   * TODO Fix the bug exist here in calculating the entry.timeToSend
+		   * check the outFileStream to see how all the times = 120 !!!
+		   * The same problem does not exist with loading the default
+		   * trace struct !
+		 */
 		  if (frameType == 'B')
 			{
 			  entry.timeToSend = 0;
 			}
+
 		  else
 			{
-			  /**
-			   * TODO Fix the bug exist here in calucalting the entry.timeToSend
-			   * check the outFileStream to see how all the times = 120 !!!
-			   * The same problem does not exist with loading the default
-			   * trace struct !
-			   */
-			  entry.timeToSend = time - prevTime;
-			  prevTime = time;
+			  entry.timeToSend = entry.traceTime-prevTimeP;
+			  prevTimeP = entry.traceTime;
 			}
-		  entry.packetSize = size;
-		  entry.frameType = frameType;
+
+
 		  std::cout <<  __PRETTY_FUNCTION__ << __LINE__ << "--->"  << std::endl;
 
 		  m_entries[filesCounter - 1].push_back(entry);
+
 		  std::cout <<  __PRETTY_FUNCTION__ << __LINE__ << "--->"  << std::endl;
-		  if (filesCounter == 1)
-		  outTimeTosendFile << entry.frameType <<"		"<< entry.timeToSend << "\n";
+		  if (filesCounter == 1){
+		  outTimeTosendFile << entry.index << "		" << entry.frameType <<"		" <<  entry.timeToSend << "\n";
+		  }
 		  loopCounter++;
 		  fileLength--;
 		  std::cout <<  __PRETTY_FUNCTION__ << " loopCounter = " << loopCounter << std::endl;
 		} // end of while loop
-	  if (filesCounter == 1)
+	  if (filesCounter == 1){
 	   outTimeTosendFile.close();
+	  }
 	   ifTraceFile.close ();
+	   // Notice that m_currentEntry must set to zero before
+	   // RateAdaptiveSender::StartApplication (void) get called
 	   m_currentEntry = 0;
 
-	  } //end of else branch
+  } // end of the different video levels For loop
 
+/**  for (filesCounter = 1;  filesCounter <= nVideoLevels; filesCounter++)
+  {
+	  //sort (myvector.begin()+4, myvector.end(), myfunction);
+	  sort (m_entries[filesCounter -1].begin(),m_entries[filesCounter -1].end());
 
-  } // end of the different video levels for loop
+  }
 
-
-}
+  for (int i=1; i<=10 ; i++){
+	  std::cout << m_entries[0][i].traceTime <<","  ;
+  }
+  std::cout << std::endl;
+ 	 	 	 	 	 	 	 	 	 */
+} // end of the function
 
 void
 RateAdaptiveSender::LoadDefaultTrace (void)
 {
+	//TODO fix entry.packetSize to become entry.frameSize after I already changed the struct definition
   NS_LOG_FUNCTION (this);
   uint32_t prevTime = 0;
   std::ofstream outTimeTosendFile;
@@ -326,16 +375,17 @@ RateAdaptiveSender::LoadDefaultTrace (void)
 
   for (uint32_t i = 0; i < (sizeof (g_defaultEntries) / sizeof (struct TraceEntry)); i++)
     {
+	  //TODO find out how this assignment works
       struct TraceEntry entry = g_defaultEntries[i];
       if (entry.frameType == 'B')
         {
+    	  // This is not the absolute time, but it is the relative time difference with the current clock value
           entry.timeToSend = 0;
         }
       else
         {
-          uint32_t tmp = entry.timeToSend;
-          entry.timeToSend -= prevTime;
-          prevTime = tmp;
+          entry.timeToSend =entry.traceTime - prevTime;
+          prevTime = entry.traceTime;
         }
       // use the first vector in the array
       m_entries[0].push_back (entry);
@@ -358,6 +408,8 @@ RateAdaptiveSender::StartApplication (void)
       m_socket->Bind ();
       m_socket->Connect (InetSocketAddress (m_peerAddress, m_peerPort));
     }
+  // This can be used later to handle the received frame in order to handle the incoming ACks
+  // Plus handling the Rate-Control Feedback messages
   m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
   m_sendEvent = Simulator::Schedule (Seconds (0.0), &RateAdaptiveSender::Send, this);
 }
@@ -375,6 +427,8 @@ RateAdaptiveSender::SendPacket (uint32_t size)
   NS_LOG_FUNCTION (this << size);
   Ptr<Packet> p;
   uint32_t packetSize;
+  // TODO find how the video frame size loses 12 bytes. This should be addition
+  // not subtraction !
   if (size>12)
     {
       packetSize = size - 12; // 12 is the size of the SeqTsHeader
@@ -386,6 +440,8 @@ RateAdaptiveSender::SendPacket (uint32_t size)
   p = Create<Packet> (packetSize);
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
+  // TODO How the 64 bit time-stamp gets set inside the header ?
+  // Does get automatically in case sending succeeded ?
   p->AddHeader (seqTs);
   if ((m_socket->Send (p)) >= 0)
     {
@@ -400,46 +456,89 @@ RateAdaptiveSender::SendPacket (uint32_t size)
     }
 }
 
+
+bool RateAdaptiveSender::AdaptControl(uint32_t signal){
+
+	if (signal > 0){
+		if (currentLevel < nVideoLevels-1)
+		currentLevel++;
+		else
+			return (false);
+		}
+	else if (signal < 0)
+	{	if (currentLevel > 0)
+			currentLevel--;
+		else
+			return (false);
+	}
+	else return (false);
+
+	return(true);
+
+}
+
+
 void
 RateAdaptiveSender::Send (void)
 {
-  NS_LOG_FUNCTION (this);
-  uint16_t vectorCounter = 0;
-  NS_ASSERT (m_sendEvent.IsExpired ());
+	  NS_LOG_FUNCTION (this);
+
+	  // Use NS_ASSERT , dont use the original assert function
+	  NS_ASSERT(m_sendEvent.IsExpired());
+	  // default Video level is the lowest until change is triggered based on feedback
+	  NS_ASSERT((currentLevel >=0) && (currentLevel<nVideoLevels));
+	  uint16_t levelCounter = currentLevel;
+	static int entryCounter=0;
+	entryCounter++;
+	std::cout << "Entry Counter   " << entryCounter << "\n";
+
   Ptr<Packet> p;
   // we will use the first vector for testing first time only
-  struct TraceEntry *entry = &m_entries[vectorCounter][m_currentEntry];
-  std::cout << "Entry Vector Size" << m_entries[vectorCounter].size () << "\n";
-  /** By Abdallah S. Abdallah
-   * Do-While Looping over all the Frames' entries whose TimeToSend already reached
-   * zero which means it is time to send them now.
-   * It is serial traversing over the vector
-   */
+  struct TraceEntry *entry = &m_entries[levelCounter][m_currentEntry];
+//  struct TraceEntry *entryNext = &m_entries[levelCounter][m_currentEntry+1];
+/**  std::cout << "Entry Vector Size" << m_entries[levelCounter].size () << "\n";
+  std::cout << "m_currentEntry" << m_currentEntry << "\n";
+  std::cout << "vectorCounter" << levelCounter << "\n" ;
+  std::cout << " m_maxPacketSize" <<  m_maxPacketSize <<"\n";
+*/
+
   do
     {
-	  /** By Abdallah S. Abdallah
+	  /* By Abdallah S. Abdallah
 	    * partition each video frame into multiple UDP packets
 	    * if the size > maximum packet size assigned to the model
 	    * max packet size variable
 	    */
-	  for (int i = 0; i < entry->packetSize / m_maxPacketSize; i++)
+	  for (int i = 0; i < entry->frameSize / m_maxPacketSize; i++)
         {
+		  // No smoothing is implemented. The server sends the maximum possible packet size
+		  // when the video frame size does not fit into one networking packet
           SendPacket (m_maxPacketSize);
         }
 
-      uint16_t sizetosend = entry->packetSize % m_maxPacketSize;
+      uint16_t sizetosend = entry->frameSize % m_maxPacketSize;
       SendPacket (sizetosend);
-/** By Abdallah S. Abdallah
- * according to the trace file format and how the loading TraceFile function
- * assign B Frames sending times to (zero), then there is no need
- * to sort the TimeToSend of I, and P Frames because they should be
- * already sorted by default
- */
+
+	/** By Abdallah S. Abdallah
+	 * according to the trace file format and how the loading TraceFile function
+	 * assign B Frames sending times to (zero), then there is no need
+	 * to sort the TimeToSend of I, and P Frames because they should be
+	 * already sorted by default
+	 */
       m_currentEntry++;
-      m_currentEntry %= m_entries[vectorCounter].size ();
-      entry = &m_entries[vectorCounter][m_currentEntry];
+      // The line below will reinitialize the m_currentEntry value to zero once it reaches the end of
+      // the vector which is the reason why the server relooping over the traces from the begining
+
+      m_currentEntry %= m_entries[levelCounter].size ();
+/**      if (m_currentEntry == 0)
+    	  this->StopApplication();
+    	  */
+      // assign the pointer to the next video frame within the current level
+      entry = &m_entries[levelCounter][m_currentEntry];
     }
   while (entry->timeToSend == 0);
+
+
   m_sendEvent = Simulator::Schedule (MilliSeconds (entry->timeToSend), &RateAdaptiveSender::Send, this);
 }
 

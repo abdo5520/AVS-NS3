@@ -1,6 +1,6 @@
-# project ns (3.13) configured on Sun Jun 24 18:11:30 2012 by
+# project ns (3.13) configured on Sun Jul 29 09:52:23 2012 by
 # waf 1.6.7 (abi 98, python 20605f0 on linux2)
-# using ./waf -d debug --enable-sudo --enable-examples --enable-tests configure
+# using waf configure --enable-examples --enable-tests --with-pybindgen ../pybindgen-0.15.0.795
 #
 ----------------------------------------
 Setting top to
@@ -76,7 +76,7 @@ from /home/abdo/ns-allinone-3.13/ns-3.13/src/core: Test does not build: Tracebac
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task failed (exit status 1): 
-	{task 144719820: cxx test.cpp -> test.cpp.1.o}
+	{task 150735148: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wall', '-Werror', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -108,7 +108,7 @@ from /home/abdo/ns-allinone-3.13/ns-3.13/src/core: Test does not build: Tracebac
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task failed (exit status 1): 
-	{task 144840524: cxx test.cpp -> test.cpp.1.o}
+	{task 150868076: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wall', '-Werror', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -172,7 +172,7 @@ from /home/abdo/ns-allinone-3.13/ns-3.13/src/core: Test does not build: Tracebac
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task failed (exit status 1): 
-	{task 144719820: cxx test.cpp -> test.cpp.1.o}
+	{task 150773036: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wall', '-Werror', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DINT64X64_USE_CAIRO=1', '-DHAVE_STDINT_H=1', '-DHAVE_INTTYPES_H=1', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -338,7 +338,7 @@ from /home/abdo/ns-allinone-3.13/ns-3.13/src/core: Test does not build: Tracebac
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task failed (exit status 1): 
-	{task 144928524: cxx test.cpp -> test.cpp.1.o}
+	{task 150868204: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wall', '-Werror', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DINT64X64_USE_CAIRO=1', '-DHAVE_SYS_TYPES_H=1', '-DHAVE_SYS_STAT_H=1', '-DHAVE_DIRENT_H=1', '-DHAVE_STDLIB_H=1', '-DHAVE_GETENV=1', '-DHAVE_SIGNAL_H=1', '-DHAVE_PTHREAD_H=1', '-DHAVE_STDINT_H=1', '-DHAVE_INTTYPES_H=1', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -577,7 +577,7 @@ int main() { return 0; }
 ok
 -------------------------------------------------------------------------
 Checking for pybindgen location
-../pybindgen-0.15.0.795 (guessed)
+../pybindgen-0.15.0.795 (given)
 -------------------------------------------------------------------------
 Python module pybindgen
 ['/usr/bin/python', '-c', '\nimport pybindgen\nprint(1)\n']
@@ -612,7 +612,7 @@ from /home/abdo/ns-allinone-3.13/ns-3.13/bindings/python: Test does not build: T
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task failed (exit status 1): 
-	{task 145086540: cxx test.cc -> test.cc.1.o}
+	{task 151089452: cxx test.cc -> test.cc.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wall', '-Werror', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DSQLITE3=1', '-DHAVE_IF_TUN_H=1', '-DPYTHONDIR="/usr/local/lib/python2.6/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.6/dist-packages"', '-DHAVE_PYTHON_H=1', '../test.cc', '-c', '-o', 'test.cc.1.o']
 
 -------------------------------------------------------------------------

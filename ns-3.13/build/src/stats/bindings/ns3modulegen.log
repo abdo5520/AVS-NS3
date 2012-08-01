@@ -1,5 +1,5 @@
 >>>>>>>>>>>>>>>> []
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9759b6c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9eb5b6c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper public: retval? ???::CopyAllFrom (params?);
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
@@ -29,19 +29,19 @@
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper public: retval? ???::Write (params?);
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['ns3::Ptr< ns3::EventImpl > &'],) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x98a138c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['ns3::Ptr< ns3::EventImpl > &'],) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9ffc38c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('Either caller_owns_return or self.reference_existing_object must be given',) in wrapper public: retval? ???::PeekEventImpl (params?) const;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::ostream &'],) in wrapper public: retval? ???::Print (params?) const;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9900eec>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0xa05beec>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper public: retval? ???::GetBytes (params?) const;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper public: retval? ???::Set (params?);
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x992558c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0xa08058c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/pybindgen-0.15.0.795/pybindgen/settings.py:85: DeprecationWarning: The option pybindgen.settings.deprecated_virtuals has not been set.  I am going to assume the value of True, to preserve backward compatibility, but the default value will change in the future, and the option will eventually disappear.
   DeprecationWarning)
@@ -57,7 +57,7 @@
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::ostream &'],) in wrapper public: virtual retval? ???::Print (params?) const = 0;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9a77c6c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0xa1d2c6c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['ns3::Callback< ns3::ObjectBase *, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty, ns3::empty >'],) in wrapper public: retval? ???::GetConstructor (params?) const;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
@@ -73,9 +73,9 @@
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::_List_iterator< std::pair< std::basic_string< char, std::char_traits< char >, std::allocator< char > >, std::basic_string< char, std::char_traits< char >, std::allocator< char > > > >'],) in wrapper public: retval? ???::MetadataEnd (params?);
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9de460c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0xa53f60c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
-/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0x9de462c>
+/home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeConfigurationError('direction not given',) in wrapper <pybindgen.cppmethod.CppConstructor object at 0xa53f62c>
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))
 /home/abdo/ns-allinone-3.13/ns-3.13/src/stats/bindings/modulegen__gcc_ILP32.py:9: UserWarning: exception TypeLookupError(['std::ostream &'],) in wrapper public: retval? ???::PrintByteTags (params?) const;
   warnings.warn("exception %r in wrapper %s" % (exception, wrapper))

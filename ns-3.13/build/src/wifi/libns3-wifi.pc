@@ -6,7 +6,7 @@ includedir=/usr/local/include
 Name: libns3-wifi
 Description: ns-3 module ns3-wifi
 Version: devel
-Libs: -L${libdir} -Wl,-Bdynamic -lns3-wifi
+Libs: -L${libdir} -Wl,-Bdynamic -lns3-wifi -lgsl -lgslcblas -lm
 Cflags: -I${includedir}
 Requires: libns3-network libns3-propagation
 

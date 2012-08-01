@@ -38,7 +38,7 @@ public:
   SeqTsHeader ();
 
   /**
-   * \param seq the sequence number
+   * \param set the sequence number
    */
   void SetSeq (uint32_t seq);
   /**
