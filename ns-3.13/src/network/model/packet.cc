@@ -861,6 +861,7 @@ Packet::RemoveAllPacketTags (void)
   m_packetTagList.RemoveAll ();
 }
 
+
 void 
 Packet::PrintPacketTags (std::ostream &os) const
 {

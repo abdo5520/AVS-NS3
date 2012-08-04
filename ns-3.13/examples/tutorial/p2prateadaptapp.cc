@@ -22,6 +22,7 @@
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/stats-module.h"
 //#include "backgroundcontrol.h"
 
 // 			Default Network Topology
@@ -34,6 +35,7 @@
 
 
 using namespace ns3;
+//using namespace std;
 
 NS_LOG_COMPONENT_DEFINE ("p2prateadaptappExample");
 
@@ -93,6 +95,34 @@ void Controlling(RateAdaptiveSender *pToServer)
 
 }
 
+
+static void
+RxDrop (Ptr<const Packet> p)
+{
+	static int n_droppedPackets=0;
+	static Time t1 = Seconds(0.0);
+	n_droppedPackets++;
+/**	int n_droppedPacketsPerSecond;
+	double average_droppedPackets;
+	t1 = t1 + Simulator::Now();
+	if (t1 > 1.0)
+	{t1 = 0.0;
+	average_droppedPackets = n_droppedPackets / Seconds
+		}
+*/
+
+  NS_LOG_UNCOND ("RxDrop at " << Simulator::Now ().GetSeconds ());
+}
+
+void TxCallback (Ptr<CounterCalculator<uint32_t> > datac,
+                 std::string path, Ptr<const Packet> packet) {
+  NS_LOG_INFO ("Sent frame counted in " <<
+               datac->GetKey ());
+  datac->Update ();
+  // end TxCallback
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -103,6 +133,13 @@ main (int argc, char *argv[])
         cout << "//                   			point-to-point                       \n";
         cout << "//                          LAN 10.1.1.1      		    			 \n";
    
+
+        string format ("omnet");
+        string experiment ("wifi-distance-test");
+        string strategy ("wifi-default");
+        string input;
+        string runID;
+
 
   bool verbose = true;
   // Random Generator Related Code
@@ -128,12 +165,13 @@ main (int argc, char *argv[])
 
 
   cmd.Parse (argc,argv);
-  LogComponentEnable ("RateAdaptiveSender", LOG_LEVEL_INFO);
-  LogComponentEnable ("RateAdaptiveReceiver", LOG_LEVEL_INFO);
+
 
   if (verbose)
     {
-     LogComponentEnableAll(LOG_LEVEL_INFO);
+//	  LogComponentEnable ("RateAdaptiveSender", LOG_LEVEL_INFO);
+//	  LogComponentEnable ("RateAdaptiveReceiver", LOG_LEVEL_INFO);
+ //    LogComponentEnableAll(LOG_LEVEL_INFO);
     }
 
 
@@ -149,6 +187,20 @@ main (int argc, char *argv[])
   NetDeviceContainer p2pDevices;
   p2pDevices = pointToPoint.Install (p2pNodes);
 
+  // Generating the rate error model
+//  Ptr<RateErrorModel> em = CreateObjectWithAttributes<RateErrorModel> (
+//      "RanVar", RandomVariableValue (UniformVariable (0., 1.)),
+//      "ErrorRate", DoubleValue (0.001));
+//   Attach the rate error model to the receiver ( client side)
+//  p2pDevices.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  p2pDevices.Get (0)->TraceConnectWithoutContext ("PhyRxDrop", MakeCallback (&RxDrop));
+
+//  p2pDevices.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+//  p2pDevices.Get (1)->TraceConnectWithoutContext ("PhyRxDrop", MakeCallback (&RxDrop));
+
+
+
+
   /**
    * This class aggregates instances of these objects, by default, to each node:
    *  - ns3::ArpL3Protocol
@@ -159,7 +211,7 @@ main (int argc, char *argv[])
    *  - a PacketSocketFactory
    *  - Ipv4 routing (a list routing object and a static routing object)
   */
-
+// Setup the stack , connect the nodes and devices and install the applications
   InternetStackHelper stack;
   stack.Install (p2pNodes);
 
@@ -177,10 +229,8 @@ main (int argc, char *argv[])
     ApplicationContainer appsClient = videoClient.Install (p2pNodes.Get (0));
     appsClient.Start (Seconds (0.0));
     appsClient.Stop (Seconds (11.001));
-
+    // This needs to be changed once we move to using the TCP protocol
     uint32_t MaxPacketSize = 1400-28; // IP Header (20) + UDP Header (8) = 28
-
-
 
     // set the remote address and remote port
     Ptr<RateAdaptiveSender> pServer;
@@ -201,20 +251,45 @@ main (int argc, char *argv[])
 
     // Schedule the Control Algorithm Callback function
     Simulator::Schedule(Seconds(2.0), Controlling,ppServer);
-
-
-
-
-
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
     Simulator::Stop (Seconds (11.001));
   // The string passed is a Filename prefix to use when creating ascii trace files
     pointToPoint.EnablePcapAll ("p2prateadaptapp");
-
-
-
   //  csma.EnablePcap ("third", csmaDevices.Get (0), true);
+
+    // Statistic and Data collection
+    DataCollector data;
+    data.DescribeRun (experiment, strategy, input, runID);
+    data.AddMetadata ("author", "Abdallah S. Abdallah");
+    Ptr<CounterCalculator<uint32_t> > totalTx =
+      CreateObject<CounterCalculator<uint32_t> >();
+    totalTx->SetKey ("Videoserver-Total-Transmitted-MacFrames");
+    totalTx->SetContext ("node[1]");
+    Config::Connect ("/NodeList/1/DeviceList/*/$ns3::PointToPointNetDevice/Mac/MacTx",
+                     MakeBoundCallback (&TxCallback, totalTx));
+    data.AddDataCalculator (totalTx);
+
+
+    // Total received MAC frames on the receiver side
+    Ptr<PacketCounterCalculator> totalRx = CreateObject<PacketCounterCalculator>();
+    totalRx->SetKey ("VideoClient-Total-Received-MacFrames");
+    totalRx->SetContext ("P2PNodes[0]");
+    Config::Connect ("/NodeList/0/DeviceList/*/$ns3::PointToPointNetDevice/Mac/MacRx",
+    		MakeCallback (&PacketCounterCalculator::PacketUpdate, totalRx));
+    data.AddDataCalculator (totalRx);
+
+// Total sent transport Application Layer's packet on the Server side
+    Ptr<PacketCounterCalculator> appTx =
+      CreateObject<PacketCounterCalculator>();
+    appTx->SetKey ("sender-tx-packets");
+    appTx->SetContext ("P2PNodes[1]");
+//    Config::Connect ("/NodeList/1/ApplicationList/*/$RateAdaptiveSender/Tx",
+ //                    MakeCallback (&PacketCounterCalculator::PacketUpdate,appTx));
+//    data.AddDataCalculator (appTx);
+
+
+// Total received transport Application Layer's packet on the Server side
+
 
     Simulator::Run ();
     Simulator::Destroy ();

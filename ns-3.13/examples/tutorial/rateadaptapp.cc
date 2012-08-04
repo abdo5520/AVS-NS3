@@ -40,6 +40,31 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("rateadaptappExample");
 
+
+/**
+
+static void
+RxDrop (Ptr<const Packet> p)
+{
+	static int n_droppedPackets=0;
+	static Time t1 = Seconds(0.0);
+	n_droppedPackets++;
+	int n_droppedPacketsPerSecond;
+	double average_droppedPackets;
+	t1 = t1 + Simulator::Now();
+	if (t1 > 1.0)
+	{t1 = 0.0;
+	average_droppedPackets = n_droppedPackets / Seconds
+		}
+
+  NS_LOG_UNCOND ("RxDrop at " << Simulator::Now ().GetSeconds ());
+}
+
+
+*/
+
+
+
 int
 main (int argc, char *argv[])
 {
@@ -63,7 +88,7 @@ main (int argc, char *argv[])
   uint32_t np2pNodes = 2;
   uint16_t nLevels = 3;
   std::string inputFileName("JurassicPark");
-  std::string outputFileName("rateAdaptOut1");
+  std::string outputFileName("WiFirateAdaptOut1");
 
 // comment unused variables because warnings are treated as errors      
 //  uint32_t serverPortNumber= 4000;
@@ -82,22 +107,35 @@ main (int argc, char *argv[])
 
   if (verbose)
     {
-      LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
-      LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-   //  LogComponentEnableAll(LOG_LEVEL_INFO);
+	//  LogComponentEnable ("RateAdaptiveSender", LOG_LEVEL_INFO);
+	//  LogComponentEnable ("RateAdaptiveReceiver", LOG_LEVEL_INFO
+  //  LogComponentEnableAll(LOG_LEVEL_INFO);
     }
 
   NodeContainer p2pNodes;
   p2pNodes.Create (np2pNodes);
 
   PointToPointHelper pointToPoint;
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
+  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   // find out later what is the channel delay concept from the model point of view
   pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));  
 
   NetDeviceContainer p2pDevices;
 // one of these nodes is the source, and the second one is the Access Point in the WiFi side
   p2pDevices = pointToPoint.Install (p2pNodes);   
+
+// Error Model added into the P2P Connection
+// Generating the rate error model
+  /**
+  Ptr<RateErrorModel> em = CreateObjectWithAttributes<RateErrorModel> (
+      "RanVar", RandomVariableValue (UniformVariable (0., 1.)),
+      "ErrorRate", DoubleValue (0.001));
+//   Attach the rate error model to the receiver ( client side)
+  p2pDevices.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  p2pDevices.Get (1)->TraceConnectWithoutContext ("PhyRxDrop", MakeCallback (&RxDrop));
+
+*/
+
 
 // No csma nodes ( these are CSMA/CD Ethernet Nodes) in this simulation , maybe later
 /**
@@ -116,32 +154,29 @@ main (int argc, char *argv[])
   wifiStaNodes.Create (nWifi);    // nWifi is the number of WiFi Station nodes entered by the user or set as default
 
   // set one of the p2p Nodes to become the WiFi Access Point (AP) Node
-  NodeContainer wifiApNode = p2pNodes.Get (0);
-
+  NodeContainer wifiApNode;
+  // WifiApNode is the p2pNode[1]
+  wifiApNode.Add(p2pNodes.Get(1));
+// Setup Wifi Channel and MAC layers
   YansWifiChannelHelper channel = YansWifiChannelHelper::Default ();
   YansWifiPhyHelper phy = YansWifiPhyHelper::Default ();
-  phy.SetChannel (channel.Create ());
+  // The default is ns3:: NistErrorRateModel, this is why we changed to Yans
+  phy.SetErrorRateModel("ns3::YansErrorRateModel");
 
+  phy.SetChannel (channel.Create());
   WifiHelper wifi = WifiHelper::Default ();
-  wifi.EnableLogComponents();
-
-// The Default value is "ns3::ArfWifiManager" , this is why we change it below to Constant Rate
+ // wifi.EnableLogComponents();
+// The Defult value is "ns3::ArfWifiManager" , this is why we change it below to Constant Rate
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager");
 /** The Default is (  helper.SetType ("ns3::AdhocWifiMac",
  "QosSupported", BooleanValue (false));) , this is why we use mac.setType later below
  to change it to StaWifiMac
 */
-
   NqosWifiMacHelper mac = NqosWifiMacHelper::Default ();
 // Later we should try the same run using the QosWifiMacHelper
 //  QosWifiMacHelper mac = QosWifiMacHelper::Default ();
-
-
   Ssid ssid = Ssid ("ns-3-ssid");
-  mac.SetType ("ns3::StaWifiMac",
-		       "Ssid", SsidValue (ssid),
-               "ActiveProbing", BooleanValue (false));
-
+  mac.SetType ("ns3::StaWifiMac","Ssid", SsidValue (ssid),"ActiveProbing", BooleanValue (false));
   NetDeviceContainer staDevices;
   staDevices = wifi.Install (phy, mac, wifiStaNodes);
 
@@ -150,8 +185,7 @@ main (int argc, char *argv[])
 // Note that we reuse the same WifiPhy Phy as it is , without modifications.
 // It makes sense since both devices share the same Physical channel
 // Notice that we assign the Access-Point to the same SSID as the Station Node(s)
-  mac.SetType ("ns3::ApWifiMac",
-               "Ssid", SsidValue (ssid));
+  mac.SetType ("ns3::ApWifiMac","Ssid", SsidValue (ssid));
 
   NetDeviceContainer apDevices;
   apDevices = wifi.Install (phy, mac, wifiApNode);
@@ -160,7 +194,7 @@ main (int argc, char *argv[])
  // correctly , if we want stationary nodes, then we install constant position Mobility Model
 
   MobilityHelper mobility;
-/**
+
   mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
                                  "MinX", DoubleValue (0.0),
                                  "MinY", DoubleValue (0.0),
@@ -168,15 +202,21 @@ main (int argc, char *argv[])
                                  "DeltaY", DoubleValue (10.0),
                                  "GridWidth", UintegerValue (3),
                                  "LayoutType", StringValue ("RowFirst"));
-
+  /**
   mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
                              "Bounds", RectangleValue (Rectangle (-50, 50, -50, 50)));
 */
-  mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+  mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
+                             "Bounds", RectangleValue (Rectangle (-50, 50, -50, 50)));
+
+//  mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (wifiStaNodes);
 // fixed position mobility model for the Access Point
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (wifiApNode);
+
+
+
 
 
 /**
@@ -193,6 +233,7 @@ main (int argc, char *argv[])
 // No more csmaNodes in use
 //  stack.Install (csmaNodes);
   stack.Install(p2pNodes);
+ // stack.Install(wifiApNode);
 // TODO find out how the stack is added to the Access-point Node ?! 
 // Although it is copied from the example model but it should not have L4 and above !!
 //  stack.Install (wifiApNode);
@@ -210,9 +251,13 @@ main (int argc, char *argv[])
 */
   address.SetBase ("10.1.3.0", "255.255.255.0"); 
 // Added by Abdallah Abdallah
-  Ipv4InterfaceContainer wifiStaInterfaces;     
+  Ipv4InterfaceContainer wifiStaInterfaces;
+  Ipv4InterfaceContainer wifiApInterface;
   wifiStaInterfaces = address.Assign (staDevices);
-  address.Assign (apDevices);
+  wifiApInterface	= address.Assign (apDevices);
+
+
+
 
   // In this simulation we will run the rate adaptive sender on the p2p node
   // Then we install a regular udpServer application on the Wifi node
@@ -225,8 +270,8 @@ main (int argc, char *argv[])
   RateAdaptiveReceiverHelper videoClient (port);
 //  ApplicationContainer apps = server.Install (wifiStaNodes.Get (nWifi - 1));
   ApplicationContainer apps = videoClient.Install (wifiStaNodes.Get (nWifi - 1));
-  apps.Start (Seconds (1.9));
-  apps.Stop (Seconds (2.1));
+  apps.Start (Seconds (0.0));
+  apps.Stop (Seconds (11.001));
 
 
   uint32_t MaxPacketSize = 1400-28; // IP Header (20) + UDP Header (8) = 28
@@ -239,14 +284,14 @@ main (int argc, char *argv[])
   videoServer.SetAttribute("OutputTraceFilename", StringValue(outputFileName));
 
   std::cout << outputFileName << std::endl;
-  apps = videoServer.Install (p2pNodes.Get (1));
-  apps.Start (Seconds (2.0));
-  apps.Stop (Seconds (2.1));
+  apps = videoServer.Install (p2pNodes.Get (0));
+  apps.Start (Seconds (1.0));
+  apps.Stop (Seconds (11.001));
 
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  Simulator::Stop (Seconds (2.1));
+  Simulator::Stop (Seconds (11.001));
 // The string passed is a Filename prefix to use when creating ascii trace files
   pointToPoint.EnablePcapAll ("rateadaptapp"+inputFileName);
 //  phy.EnablePcap ("rateadaptapp"+inputFileName, apDevices.Get (0));

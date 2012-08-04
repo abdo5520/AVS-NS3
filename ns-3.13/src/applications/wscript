@@ -1,7 +1,7 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 def build(bld):
-    module = bld.create_ns3_module('applications', ['internet', 'config-store', 'tools'])
+    module = bld.create_ns3_module('applications',['internet','stats','config-store', 'tools'])
     module.source = [
         'model/bulk-send-application.cc',
         'model/onoff-application.cc',
@@ -22,6 +22,7 @@ def build(bld):
         'model/rate-adaptive-sender-app.cc',
 # the rate adaptive streaming receiver model by Abdallah Abdallah        
 	'model/rate-adaptive-receiver.cc',
+	'model/timestamptag.cc',        
         'helper/bulk-send-helper.cc',
         'helper/on-off-helper.cc',
         'helper/packet-sink-helper.cc',
@@ -57,7 +58,8 @@ def build(bld):
 # the rate adaptive streaming sender model by Abdallah Abdallah        
         'model/rate-adaptive-sender-app.h',
 # the rate adaptive streaming receiver model by Abdallah Abdallah
-	'model/rate-adaptive-receiver.h',        
+	'model/rate-adaptive-receiver.h',
+	'model/timestamptag.h',        
         'helper/bulk-send-helper.h',
         'helper/on-off-helper.h',
         'helper/packet-sink-helper.h',

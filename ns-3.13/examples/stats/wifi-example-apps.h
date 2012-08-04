@@ -30,7 +30,7 @@
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/application.h"
-
+#include "ns3/applications-module.h"
 #include "ns3/stats-module.h"
 
 using namespace ns3;
@@ -104,7 +104,7 @@ private:
 
 
 //------------------------------------------------------
-class TimestampTag : public Tag {
+/**class TimestampTag : public Tag {
 public:
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -124,3 +124,4 @@ private:
 
   // end class TimestampTag
 };
+*/

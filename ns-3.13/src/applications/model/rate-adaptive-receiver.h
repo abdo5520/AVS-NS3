@@ -13,7 +13,8 @@
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
 #include "ns3/address.h"
-
+#include "ns3/stats-module.h"
+#include "timestamptag.h"
 namespace ns3 {
 
 class Socket;
@@ -36,6 +37,8 @@ public:
   static TypeId GetTypeId (void);
   RateAdaptiveReceiver ();
   virtual ~RateAdaptiveReceiver ();
+  void SetDelayTracker (Ptr<TimeMinMaxAvgTotalCalculator> delay);
+  void SetCounter (Ptr<CounterCalculator<> > calc);
 
 protected:
   virtual void DoDispose (void);
@@ -44,10 +47,15 @@ private:
 
   virtual void StartApplication (void);
   virtual void StopApplication (void);
+  Ptr<TimeMinMaxAvgTotalCalculator> m_delay;
+  Ptr<CounterCalculator<> > m_calc;
 
+
+  // Packet Receiving Handler
   void HandleRead (Ptr<Socket> socket);
-
+  DropTailQueue displayBuffer;
   uint16_t m_port;
+  uint32_t m_nReceivedPacket;
   Ptr<Socket> m_socket;
   Address m_local;
 };

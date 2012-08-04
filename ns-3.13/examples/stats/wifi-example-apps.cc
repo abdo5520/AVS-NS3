@@ -273,6 +273,7 @@ Receiver::Receive (Ptr<Socket> socket)
 //----------------------------------------------------------------------
 //-- TimestampTag
 //------------------------------------------------------
+/**
 TypeId 
 TimestampTag::GetTypeId (void)
 {
@@ -328,3 +329,4 @@ TimestampTag::Print (std::ostream &os) const
 {
   os << "t=" << m_timestamp;
 }
+*/

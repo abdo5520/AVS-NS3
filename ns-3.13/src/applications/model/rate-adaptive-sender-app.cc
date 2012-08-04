@@ -90,6 +90,9 @@ RateAdaptiveSender::GetTypeId (void)
                    StringValue (""),
                    MakeStringAccessor (&RateAdaptiveSender::SetTraceFile),
                    MakeStringChecker ())
+     .AddTraceSource ("Tx", "A new packet is created and is sent",
+                                    MakeTraceSourceAccessor (&RateAdaptiveSender::m_txTrace))
+
 
 
 
@@ -438,14 +441,27 @@ RateAdaptiveSender::SendPacket (uint32_t size)
       packetSize = 0;
     }
   p = Create<Packet> (packetSize);
+
+
+  TimestampTag timestamp;
+  timestamp.SetTimestamp (Simulator::Now ());
+  //p->AddPacketTag(timestamp);
+  p->AddByteTag(timestamp);
+/** we added separate Timestamp above using the TimestampTag
+ * Later we may find a way to use the time initialized into the SeqTsHeader
+ * at creation instead of the double effort here
+ */
   SeqTsHeader seqTs;
   seqTs.SetSeq (m_sent);
   // TODO How the 64 bit time-stamp gets set inside the header ?
   // Does get automatically in case sending succeeded ?
   p->AddHeader (seqTs);
+
   if ((m_socket->Send (p)) >= 0)
     {
       ++m_sent;
+      // Report the event to the trace.
+      m_txTrace (p);
       NS_LOG_INFO ("Sent " << size << " bytes to "
                            << m_peerAddress);
     }
@@ -454,27 +470,6 @@ RateAdaptiveSender::SendPacket (uint32_t size)
       NS_LOG_INFO ("Error while sending " << size << " bytes to "
                                           << m_peerAddress);
     }
-}
-
-
-bool RateAdaptiveSender::AdaptControl(uint32_t signal){
-
-	if (signal > 0){
-		if (currentLevel < nVideoLevels-1)
-		currentLevel++;
-		else
-			return (false);
-		}
-	else if (signal < 0)
-	{	if (currentLevel > 0)
-			currentLevel--;
-		else
-			return (false);
-	}
-	else return (false);
-
-	return(true);
-
 }
 
 
@@ -541,6 +536,33 @@ RateAdaptiveSender::Send (void)
 
   m_sendEvent = Simulator::Schedule (MilliSeconds (entry->timeToSend), &RateAdaptiveSender::Send, this);
 }
+
+
+// Adapt Control related
+
+bool RateAdaptiveSender::AdaptControl(uint32_t signal){
+
+	if (signal > 0){
+		if (currentLevel < nVideoLevels-1)
+		currentLevel++;
+		else
+			return (false);
+		}
+	else if (signal < 0)
+	{	if (currentLevel > 0)
+			currentLevel--;
+		else
+			return (false);
+	}
+	else return (false);
+
+	return(true);
+
+}
+
+
+
+
 
 } // Namespace ns3
 

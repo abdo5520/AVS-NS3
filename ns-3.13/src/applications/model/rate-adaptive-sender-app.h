@@ -12,6 +12,8 @@
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
+#include "timestamptag.h"
+
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
@@ -107,7 +109,7 @@ private:
   void ScheduleTransmit (Time dt);
   void Send (void);
   void SendPacket (uint32_t size);
-
+  TracedCallback<Ptr<const Packet> > m_txTrace;
 
   struct TraceEntry
   {
@@ -139,6 +141,12 @@ private:
   static struct TraceEntry g_defaultEntries[];
 
 };
+
+
+
+
+
+
 
 } // namespace ns3
 

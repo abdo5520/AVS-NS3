@@ -22,6 +22,7 @@
 #include "rate-adaptive-receiver.h"
 #include "rate-adaptive-sender-app.h"
 #include "seq-ts-header.h"
+#include "timestamptag.h"
 #include "udp-client-server-helper.h"
 #include "udp-client.h"
 #include "udp-echo-client.h"
