@@ -96,6 +96,7 @@ public:
    */
   void SetTraceFile (std::string filename);
   void SetOutputTraceFile (std::string filename);
+  void SetCurrentLevel(uint16_t targetLevel);
   bool AdaptControl (uint32_t signal);
 
 protected:
@@ -126,7 +127,9 @@ private:
   uint16_t m_maxPacketSize;
   uint16_t deltaTime;
 
+
   uint32_t m_sent;
+  uint32_t m_nVideoFramesToSend;
   std::string OutputTraceFilename;
   Ptr<Socket> m_socket;
   Ipv4Address m_peerAddress;

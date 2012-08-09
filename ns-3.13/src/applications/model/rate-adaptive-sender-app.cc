@@ -104,6 +104,7 @@ RateAdaptiveSender::RateAdaptiveSender ()
 {
   NS_LOG_FUNCTION (this);
   m_sent = 0;
+  m_nVideoFramesToSend =0;
   m_socket = 0;
   currentLevel = 0;
   deltaTime = 40;
@@ -124,6 +125,8 @@ RateAdaptiveSender::RateAdaptiveSender (Ipv4Address ip, uint16_t port,
 
   NS_LOG_FUNCTION (this);
   m_sent = 0;
+  m_nVideoFramesToSend =0;
+
   m_socket = 0;
   currentLevel = 0;
   deltaTime = 40;
@@ -288,6 +291,8 @@ RateAdaptiveSender::LoadTrace (std::string filename)
 	  std::cout << __PRETTY_FUNCTION__ << __LINE__ << "filesCounter = "<< filesCounter <<std::endl;
 	 // Read the first line in the file which is the number of video frames traces inside the file
 	  ifTraceFile >> fileLength;
+	  // Read the number of video frames and initialize the maximum number of video frames to send
+	  m_nVideoFramesToSend = fileLength;
 	  std::cout << __PRETTY_FUNCTION__ << __LINE__  << "fileLength"<< fileLength <<std::endl;
 	  }
 	  while (fileLength > 0)
@@ -480,6 +485,7 @@ RateAdaptiveSender::Send (void)
 
 	  // Use NS_ASSERT , dont use the original assert function
 	  NS_ASSERT(m_sendEvent.IsExpired());
+
 	  // default Video level is the lowest until change is triggered based on feedback
 	  NS_ASSERT((currentLevel >=0) && (currentLevel<nVideoLevels));
 	  uint16_t levelCounter = currentLevel;
@@ -523,8 +529,12 @@ RateAdaptiveSender::Send (void)
       m_currentEntry++;
       // The line below will reinitialize the m_currentEntry value to zero once it reaches the end of
       // the vector which is the reason why the server relooping over the traces from the begining
-
-      m_currentEntry %= m_entries[levelCounter].size ();
+      // We add this if condiiton to prevent relooping
+      // Check if video frames are done or not to avoid rolling over again
+      if (m_currentEntry < m_nVideoFramesToSend)
+    	  m_currentEntry %= m_entries[levelCounter].size ();
+      else
+    	  return;
 /**      if (m_currentEntry == 0)
     	  this->StopApplication();
     	  */
@@ -557,6 +567,15 @@ bool RateAdaptiveSender::AdaptControl(uint32_t signal){
 	else return (false);
 
 	return(true);
+
+}
+
+void RateAdaptiveSender::SetCurrentLevel(uint16_t targetLevel)
+{
+
+	  NS_ASSERT((currentLevel >=0) && (currentLevel< nVideoLevels));
+	  currentLevel = targetLevel;
+
 
 }
 

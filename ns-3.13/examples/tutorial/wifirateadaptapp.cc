@@ -38,7 +38,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("rateadaptappExample");
+NS_LOG_COMPONENT_DEFINE ("wifirateadaptappExample");
 
 UniformVariable x(0.0,10.0);
 EventId controlEventID;
@@ -114,13 +114,14 @@ main (int argc, char *argv[])
    
 
   bool verbose = true;
-  
+  uint16_t videoLevel=2;
+
 //  uint32_t nCsma = 3;
   uint32_t nWifi = 1;         // Only one WifiStaNode attached to the Access Point
   uint32_t np2pNodes = 2;
   uint16_t nLevels = 3;
   std::string inputFileName("JurassicPark");
-  std::string outputFileName("rateAdaptOut1");
+  std::string outputFileName("wifirateAdaptOut1");
 
 // comment unused variables because warnings are treated as errors      
 //  uint32_t serverPortNumber= 4000;
@@ -144,19 +145,13 @@ main (int argc, char *argv[])
   //  LogComponentEnableAll(LOG_LEVEL_INFO);
     }
 
-
-
-
-
-
-
   NodeContainer p2pNodes;
   p2pNodes.Create (np2pNodes);
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   // find out later what is the channel delay concept from the model point of view
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));  
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer p2pDevices;
 // one of these nodes is the source, and the second one is the Access Point in the WiFi side
@@ -175,19 +170,7 @@ main (int argc, char *argv[])
 */
 
 
-// No csma nodes ( these are CSMA/CD Ethernet Nodes) in this simulation , maybe later
-/**
-  NodeContainer csmaNodes;
-  csmaNodes.Add (p2pNodes.Get (1));
-  csmaNodes.Create (nCsma);    // nCsma is the number of CSMA nodes entered by the user or set as default
 
-  CsmaHelper csma;
-  csma.SetChannelAttribute ("DataRate", StringValue ("100Mbps"));
-  csma.SetChannelAttribute ("Delay", TimeValue (NanoSeconds (6560)));    // 6560 nanoSec = 6.56 microSec
-
-  NetDeviceContainer csmaDevices;
-  csmaDevices = csma.Install (csmaNodes);
-*/
   NodeContainer wifiStaNodes;
   wifiStaNodes.Create (nWifi);    // nWifi is the number of WiFi Station nodes entered by the user or set as default
 
@@ -291,8 +274,9 @@ main (int argc, char *argv[])
 // Added by Abdallah Abdallah
   Ipv4InterfaceContainer wifiStaInterfaces;
   Ipv4InterfaceContainer wifiApInterface;
-  wifiStaInterfaces = address.Assign (staDevices);
   wifiApInterface	= address.Assign (apDevices);
+  wifiStaInterfaces = address.Assign (staDevices);
+
 
 
 
@@ -308,8 +292,9 @@ main (int argc, char *argv[])
   RateAdaptiveReceiverHelper videoClient (port);
 //  ApplicationContainer apps = server.Install (wifiStaNodes.Get (nWifi - 1));
   ApplicationContainer appsClient = videoClient.Install (wifiStaNodes.Get (nWifi - 1));
+
   appsClient.Start (Seconds (0.0));
-  appsClient.Stop (Seconds (11.001));
+  appsClient.Stop (Seconds (12.001));
 
 
   uint32_t MaxPacketSize = 1400-28; // IP Header (20) + UDP Header (8) = 28
@@ -324,12 +309,19 @@ main (int argc, char *argv[])
   std::cout << outputFileName << std::endl;
   ApplicationContainer appsServer;
   appsServer = videoServer.Install (p2pNodes.Get (0));
-  appsServer.Start (Seconds (1.0));
-  appsServer.Stop (Seconds (11.001));
 
   // Create a pointer to the Video Server object and acquire the address of the server instance
   RateAdaptiveSender *ppServer;
   ppServer= (RateAdaptiveSender *)GetPointer(appsServer.Get(0));
+
+  // set the default Videl Quality Level initialized by the Server
+  // For MPEG Low =0 , Midium = 1, High = 2
+  // For H.263 16k = 0, 64k = 1 , 256k = 2, VBR = 3;
+  ppServer->SetCurrentLevel(videoLevel);
+
+  appsServer.Start (Seconds (1.0));
+  appsServer.Stop (Seconds (12.001));
+
 
 
 
@@ -339,13 +331,14 @@ main (int argc, char *argv[])
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  Simulator::Stop (Seconds (11.001));
+  Simulator::Stop (Seconds (12.001));
 // The string passed is a Filename prefix to use when creating ascii trace files
-  pointToPoint.EnablePcapAll ("rateadaptapp"+inputFileName);
-//  phy.EnablePcap ("rateadaptapp"+inputFileName, apDevices.Get (0));
-//  phy.EnablePcap ("rateadaptapp"+inputFileName, staDevices.Get(0));
+  pointToPoint.EnablePcapAll ("wifirateadaptapp"+inputFileName);
+//  phy.EnablePcap ("wifirateadaptappSource"+inputFileName, p2pDevices.Get (0));
+//  phy.EnablePcap ("wifirateadaptappGateway"+inputFileName, p2pDevices.Get (1));
+  phy.EnablePcap ("wifirateadaptappAP"+inputFileName, apDevices.Get (0));
+  phy.EnablePcap ("wifirateadaptappSTA"+inputFileName, staDevices.Get(0));
 
-//  csma.EnablePcap ("third", csmaDevices.Get (0), true);
 
   Simulator::Run ();
   Simulator::Destroy ();

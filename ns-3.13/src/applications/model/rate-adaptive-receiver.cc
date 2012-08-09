@@ -27,6 +27,8 @@
 #include "ns3/socket-factory.h"
 #include "ns3/packet.h"
 #include "ns3/uinteger.h"
+#include "seq-ts-header.h"
+
 
 #include "rate-adaptive-receiver.h"
 
@@ -48,11 +50,16 @@ TypeId RateAdaptiveReceiver::GetTypeId(void) {
 RateAdaptiveReceiver::RateAdaptiveReceiver() {
 	NS_LOG_FUNCTION_NOARGS ();
 	m_nReceivedPacket = 0;
+	m_playBufCurrentSize = 0;
+	m_initialPlayDelay = 3;	  // seconds to wait before scheduling the first display (PlayFromBuffer) event
+	m_playRate=25;
 }
 
 RateAdaptiveReceiver::~RateAdaptiveReceiver() {
 	NS_LOG_FUNCTION_NOARGS ();
 	m_socket = 0;
+
+
 }
 
 void RateAdaptiveReceiver::DoDispose(void) {
@@ -92,6 +99,9 @@ void RateAdaptiveReceiver::StartApplication(void) {
 
 	m_socket->SetRecvCallback(
 			MakeCallback(&RateAdaptiveReceiver::HandleRead, this));
+
+	playEvent = Simulator::Schedule (Seconds (m_initialPlayDelay)+MicroSeconds(100) , &RateAdaptiveReceiver::PlayFromBuffer, this);
+
 }
 
 void RateAdaptiveReceiver::StopApplication() {
@@ -103,6 +113,35 @@ void RateAdaptiveReceiver::StopApplication() {
 	}
 }
 
+void RateAdaptiveReceiver::SetInitialPlayDelay(uint16_t initDelay) {
+	m_initialPlayDelay = initDelay;
+}
+
+uint16_t RateAdaptiveReceiver::PlayFromBuffer(void)
+{
+
+	if (m_playBufCurrentSize - m_playRate < 0){
+		// trigger rebuffering log
+		std::cout << "REBUFFERING.........REBUFFERING.........REBUFFERING.........REBUFFERING........." << std::endl;
+		playEvent = Simulator::Schedule (MilliSeconds (1000), &RateAdaptiveReceiver::PlayFromBuffer, this);
+
+		return(-1);
+	}
+	else {
+		/** FIXME Data corruption risk if the member m_playBufCurrentSize got updated by
+		 * another method at the same time since the receiverHandler already updates the same variable
+		 * during run time
+		 */
+		m_playBufCurrentSize = m_playBufCurrentSize - m_playRate;
+
+		playEvent = Simulator::Schedule (MilliSeconds (1000), &RateAdaptiveReceiver::PlayFromBuffer, this);
+		return (m_playBufCurrentSize);
+
+	}
+
+
+}
+
 void RateAdaptiveReceiver::HandleRead(Ptr<Socket> socket) {
 	/** Modified by Abdallah Abdallah to send an AckPacket
 	 * of 10 Bytes instead of echo the entire frame
@@ -110,32 +149,53 @@ void RateAdaptiveReceiver::HandleRead(Ptr<Socket> socket) {
 
 	Ptr<Packet> ackPacket;
 	Ptr<Packet> packet;
+	SeqTsHeader receivedHeader;
 	uint32_t ackSize;
 	ackSize = 10;
-	ackPacket = Create<Packet>(ackSize);
+	uint8_t bufferAck[10];
+
 	Address from;
 	while (packet = socket->RecvFrom(from)) {
 		if (InetSocketAddress::IsMatchingType(from)) {
 			NS_LOG_INFO ("Received " << packet->GetSize () << " bytes from " <<
 											InetSocketAddress::ConvertFrom (from).GetIpv4 ());
 									m_nReceivedPacket++;
-									/** disable remove all tags below until we figure out how it works
-									 * with the tracing call back since we added a tag to the packet on the sender side
-									 */
+									m_playBufCurrentSize++;
+									packet->RemoveHeader(receivedHeader);
+									std::cout << "Packet Received #  " << m_nReceivedPacket << "At Time  "
+											<< Simulator::Now() << "  was sent at   "<< receivedHeader.GetTs() <<std::endl;
+									std::cout << "SeqTsHeader Sequence Number  "<< receivedHeader.GetSeq() << std::endl;
+									std::cout << "Packet E2E Delay  "<< Simulator::Now() -  receivedHeader.GetTs() << std::endl;
+				// The Ack packets includes the number of packet successfully received and the received packet size
+				// + 12 9 the same seqTsHeader Size that we subtracted at the sender side
+									sprintf ((char *) bufferAck, "%d,,%d", m_nReceivedPacket,packet->GetSize ()+12);
+									ackPacket = Create<Packet>(bufferAck, 10);
+
+
 									TimestampTag timestamp;
 									// Should never not be found since the sender is adding it, but
 									// you never know.
-									if (packet->FindFirstMatchingByteTag(timestamp)) {
+									// Since The time stamp found in SeqTsHeader works well, we disable the tags below
+							/**		if (packet->FindFirstMatchingByteTag(timestamp)) {
 										Time tx = timestamp.GetTimestamp();
-										std::cout << "Packet Received #  " << m_nReceivedPacket
-												<< "At Time  " << tx.GetMilliSeconds() << std::endl;
+										std::cout << "Packet Received #  " << m_nReceivedPacket << "   At Time  "
+													<< tx.GetMilliSeconds()  << std::endl;
+										std::cout << "Packet E2E Delay  " << Simulator::Now() - tx << std::endl;
+
 										if (m_delay != 0) {
 											m_delay->Update(Simulator::Now() - tx);
+											std::cout << "Packet E2E Delay  " << Simulator::Now() - tx << std::endl;
+
 										}
 									 else {
 									//	NS_ASSERT_MSG(false,"PacketTagRetrievefailed");
 									 }
-								}
+								}*/
+
+									/** disable remove all tags below until we figure out how it works
+									 * with the tracing call back since we added a tag to the packet on the sender side
+									 */
+
 					//          packet->RemoveAllPacketTags ();
 					//         packet->RemoveAllByteTags ();
 							NS_LOG_LOGIC ("Echoing packet");

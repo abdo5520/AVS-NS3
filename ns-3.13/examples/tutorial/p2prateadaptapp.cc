@@ -76,7 +76,14 @@ void BackgoundControl::Controlling()
 
 
 
-void Controlling(RateAdaptiveSender *pToServer)
+/**
+  * \brief Implements the Adaptive Streaming Logic by making the decision then passing the target video level to the
+  * the AdaptiveVideoServer instance by calling the member function (AdaptControl)
+  * \param PToServer regular C++ pointer to the RateAdaptiveSender instance
+  * \param step the periodic time step in (millisecond) to reschedule the Controlling Logic
+  * \return void return value
+ */
+void Controlling(RateAdaptiveSender *pToServer, uint64_t step)
 {
 	NS_ASSERT(controlEventID.IsExpired());
 	bool check=true;
@@ -90,10 +97,11 @@ void Controlling(RateAdaptiveSender *pToServer)
 	else
 		check = pToServer->AdaptControl(1);
 	std::cout << "Level Changed     " << check << std::endl;
-	controlEventID = Simulator::Schedule(MilliSeconds(1000), Controlling,pToServer);
+	controlEventID = Simulator::Schedule(MilliSeconds(step), Controlling,pToServer, step);
 
 
 }
+
 
 
 static void
@@ -148,7 +156,7 @@ main (int argc, char *argv[])
   // Now, create random variables
 
 
-  
+  uint16_t videoLevel = 2;
   uint32_t np2pNodes = 2;
   uint16_t nLevels = 3;
   std::string inputFileName("JurassicPark");
@@ -228,7 +236,7 @@ main (int argc, char *argv[])
     RateAdaptiveReceiverHelper videoClient (port);
     ApplicationContainer appsClient = videoClient.Install (p2pNodes.Get (0));
     appsClient.Start (Seconds (0.0));
-    appsClient.Stop (Seconds (11.001));
+    appsClient.Stop (Seconds (12.001));
     // This needs to be changed once we move to using the TCP protocol
     uint32_t MaxPacketSize = 1400-28; // IP Header (20) + UDP Header (8) = 28
 
@@ -245,14 +253,18 @@ main (int argc, char *argv[])
     std::cout << outputFileName << std::endl;
     ApplicationContainer appsServer = videoServer.Install (p2pNodes.Get (np2pNodes-1));
     ppServer= (RateAdaptiveSender *)GetPointer(appsServer.Get(0));
+    // set the default Videl Quality Level initialized by the Server
+    // For MPEG Low =0 , Midium = 1, High = 2
+    // For H.263 16k = 0, 64k = 1 , 256k = 2, VBR = 3;
+    ppServer->SetCurrentLevel(videoLevel);
     appsServer.Start (Seconds (1.0));
-    appsServer.Stop (Seconds (11.001));
+    appsServer.Stop (Seconds (12.001));
 
 
     // Schedule the Control Algorithm Callback function
-    Simulator::Schedule(Seconds(2.0), Controlling,ppServer);
+//    Simulator::Schedule(Seconds(2.0), Controlling,ppServer,1000);
     Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-    Simulator::Stop (Seconds (11.001));
+    Simulator::Stop (Seconds (12.001));
   // The string passed is a Filename prefix to use when creating ascii trace files
     pointToPoint.EnablePcapAll ("p2prateadaptapp");
   //  csma.EnablePcap ("third", csmaDevices.Get (0), true);
